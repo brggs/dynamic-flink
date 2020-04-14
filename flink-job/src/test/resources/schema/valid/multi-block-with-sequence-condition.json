@@ -1,0 +1,40 @@
+{
+  "blocks": [
+    {
+      "type": "SINGLE_EVENT",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "field",
+        "value": "single_match"
+      }
+    },
+    {
+      "type": "THRESHOLD",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "field",
+        "value": "single_match"
+      },
+      "windowSize": 30,
+      "windowSlide": 10,
+      "aggregationGroupingFields": [
+        "username"
+      ],
+      "parameters": {
+        "THRESHOLD": "5"
+      }
+    }
+  ],
+  "groupByField": "username",
+  "ruleCondition": {
+    "@class": "uk.co.brggs.dynamicflink.rules.conditions.SequenceRuleCondition",
+    "conditions": [
+      {
+        "blockIndex": 1,
+        "notPresent": true
+      }
+    ]
+  },
+  "windowSize": 10,
+  "windowSlide": 10
+}

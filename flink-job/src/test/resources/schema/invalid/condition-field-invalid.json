@@ -1,0 +1,12 @@
+{
+  "blocks": [
+    {
+      "type": "SINGLE_EVENT",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "",
+        "value": "single_match"
+      }
+    }
+  ]
+}

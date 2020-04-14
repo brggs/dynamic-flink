@@ -1,0 +1,18 @@
+{
+  "blocks": [
+    {
+      "type": "SINGLE_EVENT",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "field1",
+        "value": "value1"
+      }
+    }
+  ],
+  "ruleCondition": {
+    "@class": "uk.co.brggs.dynamicflink.rules.conditions.AllBlocksOccurredRuleCondition",
+    "blockIndices": [1]
+  },
+  "windowSlide": 0,
+  "windowSize": 0
+}

@@ -1,0 +1,11 @@
+{
+  "blocks": [
+    {
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "matchValue",
+        "value": "single_match"
+      }
+    }
+  ]
+}

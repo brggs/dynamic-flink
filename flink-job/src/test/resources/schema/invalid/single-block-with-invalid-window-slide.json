@@ -1,0 +1,14 @@
+{
+  "blocks": [
+    {
+      "type": "SINGLE_EVENT",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "field1",
+        "value": "value1"
+      }
+    }
+  ],
+  "groupByField": "field1",
+  "windowSlide": 10
+}

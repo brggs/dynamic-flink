@@ -1,0 +1,22 @@
+{
+  "blocks": [
+    {
+      "type": "THRESHOLD",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.ComparisonCondition",
+        "key": "userName_status",
+        "type": "GREATER_THAN",
+        "thresholdValue": 0
+      },
+      "windowSize": 30,
+      "windowSlide": 10,
+      "aggregationGroupingFields": [
+        "username"
+      ],
+      "parameters": {
+        "THRESHOLD": "5"
+      }
+    }
+  ],
+  "groupByField": "username"
+}

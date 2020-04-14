@@ -1,0 +1,13 @@
+{
+  "shouldNotBeHereField": 1,
+  "blocks": [
+    {
+      "type": "SINGLE_EVENT",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "field",
+        "value": "single_match"
+      }
+    }
+  ]
+}

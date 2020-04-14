@@ -1,0 +1,86 @@
+{
+  "blocks": [
+    {
+      "type": "SINGLE_EVENT",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "field",
+        "value": "single_match"
+      }
+    },
+    {
+      "type": "THRESHOLD",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.ComparisonCondition",
+        "key": "userName_status",
+        "type": "GREATER_THAN",
+        "thresholdValue": 0
+      },
+      "windowSize": 30,
+      "windowSlide": 10,
+      "aggregationGroupingFields": [
+        "username"
+      ],
+      "parameters": {
+        "THRESHOLD": "5"
+      }
+    },
+    {
+      "type": "UNIQUE_THRESHOLD",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.CompositeCondition",
+        "type": "AND",
+        "conditions": [
+          {
+            "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+            "key": "field_partial_1",
+            "value": "single_match"
+          },
+          {
+            "@class": "uk.co.brggs.dynamicflink.blocks.conditions.ComparisonCondition",
+            "key": "field_partial_2",
+            "type": "GREATER_THAN",
+            "thresholdValue": 0
+          }
+        ]
+      },
+      "windowSize": 30,
+      "windowSlide": 10,
+      "aggregationGroupingFields": [
+        "uniqueValue"
+      ],
+      "parameters": {
+        "UNIQUE_FIELD": "uniqueValue",
+        "THRESHOLD": "3"
+      }
+    },
+    {
+      "type": "SIMPLE_ANOMALY",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.RegexCondition",
+        "key": "field_for_anomaly_check",
+        "regex": "^[A-Z0-9]+"
+      },
+      "windowSize": 10,
+      "parameters": {
+        "SIMPLE_ANOMALY_THRESHOLD": "5"
+      }
+    },
+    {
+      "type": "DROP_TO_ZERO",
+      "condition": {
+        "@class": "uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition",
+        "key": "field_for_drop_check",
+        "value": "drop_match"
+      },
+      "windowSize": 10
+    }
+  ],
+  "groupByField": "username",
+  "ruleCondition": {
+    "@class": "uk.co.brggs.dynamicflink.rules.conditions.AllBlocksOccurredRuleCondition",
+    "blockIndices": [1, 2]
+  },
+  "windowSize": 10,
+  "windowSlide": 10
+}

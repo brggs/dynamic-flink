@@ -1,0 +1,626 @@
+{
+  "id": "http://brggs.co.uk/dynamic-flink/schema",
+  "version": 1,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Schema for Dyanmic Flink rule version content entry",
+  "$ref": "#/definitions/rule",
+  "definitions": {
+    "rule": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/rule/definitions/singleBlockRule"
+        },
+        {
+          "$ref": "#/definitions/rule/definitions/singleBlockSingleEventRule"
+        },
+        {
+          "$ref": "#/definitions/rule/definitions/multiBlockRule"
+        }
+      ],
+      "definitions": {
+        "singleBlockRule": {
+          "type": "object",
+          "required": [
+            "blocks"
+          ],
+          "properties": {
+            "baseSeverity": {
+              "type": "integer"
+            },
+            "blocks": {
+              "description": "List of blocks which define matching rules",
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/block/definitions/dropToZeroBlock"
+                  },
+                  {
+                    "$ref": "#/definitions/block/definitions/simpleAnomalyBlock"
+                  },
+                  {
+                    "$ref": "#/definitions/block/definitions/thresholdBlock"
+                  },
+                  {
+                    "$ref": "#/definitions/block/definitions/uniqueThresholdBlock"
+                  }
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "groupByField": {
+              "type": "string"
+            },
+            "windowSize": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 0
+            },
+            "windowSlide": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "singleBlockSingleEventRule": {
+          "type": "object",
+          "required": [
+            "blocks"
+          ],
+          "properties": {
+            "baseSeverity": {
+              "type": "integer"
+            },
+            "blocks": {
+              "description": "List of blocks which define matching rules",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/block/definitions/singleEventBlock"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "windowSize": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 0
+            },
+            "windowSlide": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "multiBlockRule": {
+          "type": "object",
+          "required": [
+            "blocks",
+            "groupByField",
+            "ruleCondition",
+            "windowSlide",
+            "windowSize"
+          ],
+          "properties": {
+            "baseSeverity": {
+              "type": "integer"
+            },
+            "blocks": {
+              "description": "List of blocks which define matching rules",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/block"
+              },
+              "minItems": 2
+            },
+            "groupByField": {
+              "type": "string"
+            },
+            "ruleCondition": {
+              "$ref": "#/definitions/ruleCondition"
+            },
+            "windowSize": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "windowSlide": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "block": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/block/definitions/singleEventBlock"
+        },
+        {
+          "$ref": "#/definitions/block/definitions/thresholdBlock"
+        },
+        {
+          "$ref": "#/definitions/block/definitions/uniqueThresholdBlock"
+        },
+        {
+          "$ref": "#/definitions/block/definitions/simpleAnomalyBlock"
+        },
+        {
+          "$ref": "#/definitions/block/definitions/dropToZeroBlock"
+        }
+      ],
+      "definitions": {
+        "singleEventBlock": {
+          "type": "object",
+          "required": [
+            "type",
+            "condition"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "SINGLE_EVENT"
+              ]
+            },
+            "condition": {
+              "$ref": "#/definitions/condition"
+            },
+            "parameters": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        "thresholdBlock": {
+          "type": "object",
+          "required": [
+            "type",
+            "condition",
+            "windowSize",
+            "windowSlide",
+            "parameters",
+            "aggregationGroupingFields"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "THRESHOLD"
+              ]
+            },
+            "condition": {
+              "$ref": "#/definitions/condition"
+            },
+            "windowSize": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "windowSlide": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "THRESHOLD": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$"
+                }
+              }
+            },
+            "aggregationGroupingFields": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "uniqueThresholdBlock": {
+          "type": "object",
+          "required": [
+            "type",
+            "condition",
+            "windowSize",
+            "windowSlide",
+            "parameters",
+            "aggregationGroupingFields"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "UNIQUE_THRESHOLD"
+              ]
+            },
+            "condition": {
+              "$ref": "#/definitions/condition"
+            },
+            "windowSize": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "windowSlide": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "THRESHOLD": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$"
+                },
+                "UNIQUE_FIELD": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "aggregationGroupingFields": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "simpleAnomalyBlock": {
+          "type": "object",
+          "required": [
+            "type",
+            "condition",
+            "windowSize",
+            "parameters"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "SIMPLE_ANOMALY"
+              ]
+            },
+            "condition": {
+              "$ref": "#/definitions/condition"
+            },
+            "windowSize": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "SIMPLE_ANOMALY_THRESHOLD": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "dropToZeroBlock": {
+          "type": "object",
+          "required": [
+            "type",
+            "condition",
+            "windowSize"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "DROP_TO_ZERO"
+              ]
+            },
+            "condition": {
+              "$ref": "#/definitions/condition"
+            },
+            "windowSize": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/condition/definitions/comparisonCondition"
+        },
+        {
+          "$ref": "#/definitions/condition/definitions/compositeCondition"
+        },
+        {
+          "$ref": "#/definitions/condition/definitions/equalCondition"
+        },
+        {
+          "$ref": "#/definitions/condition/definitions/regexCondition"
+        }
+      ],
+      "definitions": {
+        "comparisonCondition": {
+          "type": "object",
+          "properties": {
+            "@class": {
+              "type": "string",
+              "pattern": "^uk\\.co\\.brggs\\.dynamicflink\\.blocks\\.conditions\\.ComparisonCondition$"
+            },
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "name",
+                "hostname",
+                "user"
+              ]
+            },
+            "thresholdValue": {
+              "type": "number",
+              "examples": [
+                0.0,
+                0.5,
+                55
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "GREATER_THAN",
+                "GREATER_THAN_OR_EQUAL",
+                "LESS_THAN",
+                "LESS_THAN_OR_EQUAL"
+              ]
+            }
+          },
+          "required": [
+            "@class",
+            "key",
+            "type",
+            "thresholdValue"
+          ],
+          "additionalProperties": false
+        },
+        "compositeCondition": {
+          "type": "object",
+          "properties": {
+            "@class": {
+              "type": "string",
+              "pattern": "^uk\\.co\\.brggs\\.dynamicflink\\.blocks\\.conditions\\.CompositeCondition$"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "OR",
+                "AND"
+              ],
+              "examples": [
+                "OR",
+                "AND"
+              ]
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/condition/definitions/comparisonCondition"
+                  },
+                  {
+                    "$ref": "#/definitions/condition/definitions/compositeCondition"
+                  },
+                  {
+                    "$ref": "#/definitions/condition/definitions/equalCondition"
+                  },
+                  {
+                    "$ref": "#/definitions/condition/definitions/regexCondition"
+                  }
+                ]
+              },
+              "minItems": 2
+            }
+          },
+          "required": [
+            "@class",
+            "type",
+            "conditions"
+          ],
+          "additionalProperties": false
+        },
+        "equalCondition": {
+          "type": "object",
+          "properties": {
+            "@class": {
+              "type": "string",
+              "pattern": "^uk\\.co\\.brggs\\.dynamicflink\\.blocks\\.conditions\\.EqualCondition$"
+            },
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "name",
+                "hostname",
+                "user"
+              ]
+            },
+            "value": {
+              "type": "string",
+              "examples": [
+                "Jack",
+                "google.com",
+                "superuser"
+              ]
+            }
+          },
+          "required": [
+            "@class",
+            "key",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        "regexCondition": {
+          "type": "object",
+          "properties": {
+            "@class": {
+              "type": "string",
+              "pattern": "^uk\\.co\\.brggs\\.dynamicflink\\.blocks\\.conditions\\.RegexCondition$"
+            },
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "identifier",
+                "hostname",
+                "user"
+              ]
+            },
+            "regex": {
+              "type": "string",
+              "examples": [
+                "^[0-9]+",
+                "@",
+                "https://.+"
+              ]
+            }
+          },
+          "required": [
+            "@class",
+            "key",
+            "regex"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "ruleCondition": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/ruleCondition/definitions/allBlocksOccurredRuleCondition"
+        },
+        {
+          "$ref": "#/definitions/ruleCondition/definitions/anyBlocksOccurredRuleCondition"
+        },
+        {
+          "$ref": "#/definitions/ruleCondition/definitions/compositeRuleCondition"
+        },
+        {
+          "$ref": "#/definitions/ruleCondition/definitions/sequenceRuleCondition"
+        }
+      ],
+      "definitions": {
+        "allBlocksOccurredRuleCondition": {
+          "type": "object",
+          "properties": {
+            "@class": {
+              "type": "string",
+              "pattern": "^uk\\.co\\.brggs\\.dynamicflink\\.rules\\.conditions\\.AllBlocksOccurredRuleCondition$"
+            },
+            "blockIndices": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "@class",
+            "blockIndices"
+          ],
+          "additionalProperties": false
+        },
+        "anyBlocksOccurredRuleCondition": {
+          "type": "object",
+          "properties": {
+            "@class": {
+              "type": "string",
+              "pattern": "^uk\\.co\\.brggs\\.dynamicflink\\.rules\\.conditions\\.AnyBlocksOccurredRuleCondition"
+            },
+            "blockIndices": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "@class",
+            "blockIndices"
+          ],
+          "additionalProperties": false
+        },
+        "compositeRuleCondition": {
+          "type": "object",
+          "properties": {
+            "@class": {
+              "type": "string",
+              "pattern": "^uk\\.co\\.brggs\\.dynamicflink\\.rules\\.conditions\\.CompositeRuleCondition"
+            },
+            "type": {
+              "type": "string",
+              "enum": ["OR", "AND"]
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ruleCondition",
+                "minItems": 1
+              }
+            }
+          },
+          "required": [
+            "@class",
+            "type",
+            "conditions"
+          ],
+          "additionalProperties": false
+        },
+        "sequenceRuleCondition": {
+          "type": "object",
+          "properties": {
+            "@class": {
+              "type": "string",
+              "pattern": "^uk\\.co\\.brggs\\.dynamicflink\\.rules\\.conditions\\.SequenceRuleCondition"
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "blockIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "notPresent": {
+                    "type": "boolean"
+                  }
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "required": [
+            "@class",
+            "conditions"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}
