@@ -21,7 +21,7 @@ public class EventTimestampExtractor extends BoundedOutOfOrdernessTimestampExtra
             val date = inputEvent.getField(InputEvent.EventTimeField);
             return Instant.parse(date).toEpochMilli();
         } catch (Exception e) {
-            log.warn("Failed to extract timestamp from event.");
+            log.warn("Failed to extract timestamp from event.", e);
             return System.currentTimeMillis();
         }
     }
