@@ -1,0 +1,83 @@
+version: '3'
+
+services:
+  zoo1:
+    image: zookeeper:3.4.9
+    hostname: zoo1
+    ports:
+      - "2181:2181"
+    environment:
+        ZOO_MY_ID: 1
+        ZOO_PORT: 2181
+        ZOO_SERVERS: server.1=zoo1:2888:3888
+    volumes:
+      - ./zk-single-kafka-single/zoo1/data:/data
+      - ./zk-single-kafka-single/zoo1/datalog:/datalog
+    logging:
+      driver: none
+    
+
+  kafka1:
+    image: confluentinc/cp-kafka:5.5.0
+    hostname: kafka1
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=WARN,kafka.producer.async.DefaultEventHandler=WARN,state.change.logger=WARN"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - ./zk-single-kafka-single/kafka1/data:/var/lib/kafka/data
+    depends_on:
+      - zoo1
+    logging:
+      driver: none
+
+  producer:
+    build: ./producer/
+    depends_on:
+      - "kafka1"
+    command: python app.py
+
+  frontend:
+    build: ./frontend/
+    volumes:
+      - '/frontend/app'
+      - '/frontend/app/node_modules'
+    ports:
+      - 3001:3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+
+  control-api:
+    build: ./control-api/
+    ports:
+      - 3002:3030
+
+# Docker compose file for a Flink job cluster deployment.
+#
+# Parameters:
+# * FLINK_DOCKER_IMAGE_NAME - Image name to use for the deployment (default: flink-job:latest)
+# * FLINK_JOB - Name of the Flink job to execute (default: none)
+# * DEFAULT_PARALLELISM - Default parallelism with which to start the job (default: 1)
+# * FLINK_JOB_ARGUMENTS - Additional arguments which will be passed to the job cluster (default: none)
+# * SAVEPOINT_OPTIONS - Savepoint options to start the cluster with (default: none)
+
+  job-cluster:
+    image: dynamic-flink-job
+    ports:
+      - "8081:8081"
+    command: job-cluster --job-classname uk.co.brggs.dynamicflink.StreamingJob -Djobmanager.rpc.address=job-cluster -Dparallelism.default=${DEFAULT_PARALLELISM:-1} ${SAVEPOINT_OPTIONS} --kafkaServer kafka1:19092 --inputTopic events --outputTopic alerts 
+    logging:
+      driver: none
+
+  taskmanager:
+    image: dynamic-flink-job
+    command: task-manager -Djobmanager.rpc.address=job-cluster
+    logging:
+      driver: none
