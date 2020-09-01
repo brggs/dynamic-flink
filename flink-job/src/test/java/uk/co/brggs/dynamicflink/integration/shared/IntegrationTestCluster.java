@@ -157,7 +157,7 @@ public class IntegrationTestCluster {
 
     public static class ControlSink implements SinkFunction<ControlOutput> {
         // must be static
-        static final List<ControlOutput> values = new ArrayList<>();
+        public static final List<ControlOutput> values = new ArrayList<>();
 
         static CompletableFuture<Void> allControlResponsesReceived = new CompletableFuture<>();
 

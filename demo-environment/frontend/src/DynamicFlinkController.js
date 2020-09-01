@@ -20,7 +20,7 @@ class DynamicFlinkController extends Component {
   state = {
     events: [],
     alerts: [],
-    rules:  [],
+    rules: [],
   }
 
   ws = new WebSocket(URL)
@@ -40,13 +40,28 @@ class DynamicFlinkController extends Component {
         case 'alerts':
           this.setState(state => ({ alerts: [message.data, ...state.alerts] }))
           break;
-          case 'control-output-stream':
-            console.log(message.data)
-            break;
-          case 'rule-list':
-            this.setState(() => ({ rules: message.data }))
-            break;
-  
+        case 'control-output-stream':
+          const data = JSON.parse(message.data)
+          switch (data.status) {
+            case 'STATUS_UPDATE':
+              const newRules = JSON.parse(data.content).map(rule => {
+                var temp = Object.assign({}, rule)
+                temp.content = JSON.parse(rule.content)
+                return temp
+              });
+
+              this.setState(() => ({ rules: newRules }))
+              break;
+            case 'RULE_ACTIVE':
+            case 'RULE_DEACTIVATED':
+              this.refreshRules()
+              break;
+            default:
+              console.log(message.data)
+              break;
+          }
+          break;
+
         default:
           console.log(`Unexpected message type: ${message.type}`)
           break;
@@ -67,12 +82,62 @@ class DynamicFlinkController extends Component {
     this.ws.send(JSON.stringify(command))
   }
 
+  addRule() {
+    const nextRuleId = 1 + this.state.rules.reduce((prev, current) => (prev > parseInt(current.ruleId)) ? prev : parseInt(current.ruleId), 0)
+    var command = {
+      request: "add-rule",
+      ruleId: nextRuleId,
+      ruleVersion: "1",
+      ruleContent: '{"id":null,"version":0,"baseSeverity":0,"blocks":[{"type":"SINGLE_EVENT","condition":{"@class":"uk.co.brggs.dynamicflink.blocks.conditions.EqualCondition","key":"colour","value":"Blue"},"windowSize":0,"windowSlide":0,"aggregationGroupingFields":null,"parameters":null}],"ruleCondition":null,"groupByField":null,"windowSize":0,"windowSlide":0}'
+    }
+    this.ws.send(JSON.stringify(command))
+  }
+
+  updateRule(rule) {
+    var content = rule.content
+    var newVersion = rule.ruleVersion + 1
+    content.version = newVersion
+
+    var command = {
+      request: "update-rule",
+      ruleId: rule.ruleId,
+      ruleVersion: newVersion,
+      ruleContent: JSON.stringify(content)
+    }
+    this.ws.send(JSON.stringify(command))
+  }
+
+  removeRule(rule) {
+    var command = { request: "remove-rule", ruleId: rule.ruleId, ruleVersion: rule.ruleVersion }
+    this.ws.send(JSON.stringify(command))
+  }
+
+  updateRuleContent = (i, content) => {
+    this.setState(state => {
+      const list = state.rules.map((item, j) => {
+        if (j === i) {
+          return { ...item, content: JSON.parse(content) };
+        } else {
+          return item;
+        }
+      });
+
+      return {
+        rules: list,
+      };
+    });
+  };
+
   render() {
     return (
       <div>
-        <RuleList 
+        <RuleList
           rules={this.state.rules}
-          onClick={() => this.refreshRules()} />
+          onRefreshClick={() => this.refreshRules()}
+          onAddClick={() => this.addRule()}
+          onUpdateRuleContent={(i, content) => this.updateRuleContent(i, content)}
+          onUpdateClick={rule => this.updateRule(rule)}
+          onRemoveClick={rule => this.removeRule(rule)} />
         <StreamMonitor>
           <Stream><TopicLog topicName='Events' messages={this.state.events} /></Stream>
           <Stream><TopicLog topicName='Alerts' messages={this.state.alerts} /></Stream>

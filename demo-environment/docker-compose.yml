@@ -37,12 +37,6 @@ services:
     logging:
       driver: none
 
-  producer:
-    build: ./producer/
-    depends_on:
-      - "kafka1"
-    command: python app.py
-
   frontend:
     build: ./frontend/
     volumes:

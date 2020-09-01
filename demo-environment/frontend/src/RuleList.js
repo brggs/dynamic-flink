@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
+import RuleView from './RuleView'
 
 const Button = styled.a`
-  /* This renders the buttons above... Edit me! */
   display: inline-block;
   border-radius: 3px;
   padding: 0.5rem 0;
@@ -18,13 +18,14 @@ class RuleList extends Component {
     return (
       <div>
         <h2>Rules</h2>
-        <Button onClick={() => this.props.onClick()}>Refresh</Button>
-        {this.props.rules.map((rule) =>
-          <div>
-            <div>{rule.id}</div>
-            <div>{rule.version}</div>
-            <div>{rule.content}</div>
-          </div>
+        <Button onClick={() => this.props.onRefreshClick()}>Refresh</Button>
+        <Button onClick={() => this.props.onAddClick()}>Add...</Button>
+        {Object.entries(this.props.rules).map((t, k) =>
+          <RuleView
+            rule={t[1]}
+            onContentChange={(content) => this.props.onUpdateRuleContent(k, content)}
+            onUpdateClick={rule => this.props.onUpdateClick(rule)}
+            onRemoveClick={rule => this.props.onRemoveClick(rule)} />
         )}
       </div>
     )

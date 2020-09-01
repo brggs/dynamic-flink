@@ -7,13 +7,22 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMap
 
 @Slf4j
 public class ControlOutputSerializationSchema implements SerializationSchema<ControlOutput> {
+    private ObjectMapper objectMapper;
+
     @Override
     public byte[] serialize(ControlOutput element) {
         try {
-            return new ObjectMapper().writeValueAsBytes(element);
+            return getObjectMapper().writeValueAsBytes(element);
         } catch (JsonProcessingException e) {
             log.error("Failed to serialise ControlOutput", e);
             return null;
         }
+    }
+
+    private ObjectMapper getObjectMapper() {
+        if (objectMapper == null) {
+            objectMapper = new ObjectMapper();
+        }
+        return objectMapper;
     }
 }

@@ -17,7 +17,10 @@ import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 import uk.co.brggs.dynamicflink.rules.RuleType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +37,7 @@ public class InputBroadcastProcessFunction
 
     private transient long maxProcessingTime = 0;
 
-    private transient final ObjectMapper objectMapper = new ObjectMapper();
+    private transient ObjectMapper objectMapper;
 
     /**
      * Performs actions when the function is initialised
@@ -125,12 +128,16 @@ public class InputBroadcastProcessFunction
                 case QUERY_STATUS:
                     try {
                         val rules = ctx.getBroadcastState(ruleStateDescriptor);
-
-                        val rulesForOutput = new HashMap<String, Integer>();
-                        rules.entries().forEach(e -> rulesForOutput.put(e.getKey(), e.getValue().getVersion()));
-
-                        val serialisedRules = objectMapper.writeValueAsString(rulesForOutput);
-                        output = new ControlOutput(controlInput, ControlOutputStatus.HEARTBEAT_ACK, serialisedRules);
+                        val rulesForOutput = new ArrayList<RuleData>();
+                        for (Map.Entry<String, Rule> e : rules.entries()) {
+                            rulesForOutput.add(
+                                    new RuleData(
+                                            e.getKey(),
+                                            e.getValue().getVersion(),
+                                            getObjectMapper().writeValueAsString(e.getValue())));
+                        }
+                        val serialisedRules = getObjectMapper().writeValueAsString(rulesForOutput);
+                        output = new ControlOutput(controlInput, ControlOutputStatus.STATUS_UPDATE, serialisedRules);
                     } catch (Exception ex) {
                         output = new ControlOutput(controlInput, ControlOutputStatus.ERROR, ex.getMessage());
                         log.error("Error processing request to query status.", ex);
@@ -238,5 +245,12 @@ public class InputBroadcastProcessFunction
         }
 
         return matchBuilder;
+    }
+
+    private ObjectMapper getObjectMapper() {
+        if (objectMapper == null) {
+            objectMapper = new ObjectMapper();
+        }
+        return objectMapper;
     }
 }

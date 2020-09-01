@@ -177,12 +177,10 @@ class InputBroadcastProcessFunctionTest {
 
         testFunction.processBroadcastElement(new ControlInput(ControlInputType.QUERY_STATUS), contextMock, null);
 
-        //verify(ruleState, times(1)).remove(ruleId);
-
         val outputCaptor = ArgumentCaptor.forClass(ControlOutput.class);
         verify(contextMock, times(1)).output(any(OutputTag.class), outputCaptor.capture());
         val capturedOutput = outputCaptor.getAllValues();
-        assertThat(capturedOutput.get(0).getStatus()).isEqualTo(ControlOutputStatus.HEARTBEAT_ACK);
+        assertThat(capturedOutput.get(0).getStatus()).isEqualTo(ControlOutputStatus.STATUS_UPDATE);
     }
 
     @Test

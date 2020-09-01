@@ -4,5 +4,5 @@ public enum ControlOutputStatus {
     RULE_ACTIVE,
     RULE_DEACTIVATED,
     ERROR,
-    HEARTBEAT_ACK
+    STATUS_UPDATE
 }
