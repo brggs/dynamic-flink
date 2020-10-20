@@ -22,3 +22,8 @@ jobs:
         java-version: 1.8
     - name: Build with Maven
       run: mvn -B package --file flink-job/pom.xml
+    - run: mkdir artifacts && cp flink-job/target/dynamic-flink-*.jar artifacts
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Package
+        path: artifacts
