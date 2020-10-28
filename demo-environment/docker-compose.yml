@@ -48,8 +48,8 @@ services:
       - CHOKIDAR_USEPOLLING=true
     stdin_open: true
 
-  control-api:
-    build: ./control-api/
+  events-service:
+    build: ./events-service/
     ports:
       - 3002:3030
 
