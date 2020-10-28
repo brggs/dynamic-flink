@@ -25,5 +25,6 @@ jobs:
     - run: mkdir artifacts && cp flink-job/target/dynamic-flink-*.jar artifacts
     - uses: actions/upload-artifact@v2
       with:
-        name: Package
+        name: dynamic-flink-jar
         path: artifacts
+        retention-days: 5
