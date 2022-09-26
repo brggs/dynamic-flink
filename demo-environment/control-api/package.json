@@ -10,7 +10,7 @@
   "keywords": [],
   "dependencies": {
     "kafka-node": "^5.0.0",
-    "pubnub": "^4.24.4",
+    "pubnub": "^4.37.0",
     "websocket": "^1.0.29",
     "ws": "^7.3.0"
   }
