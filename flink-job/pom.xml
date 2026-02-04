@@ -11,9 +11,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flink.version>1.10.1</flink.version>
-        <java.version>1.8</java.version>
-        <scala.binary.version>2.11</scala.binary.version>
+        <flink.version>1.20.0</flink.version>
+        <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
@@ -49,25 +48,20 @@
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
+            <artifactId>flink-streaming-java</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-test-utils_2.11</artifactId>
+            <artifactId>flink-test-utils</artifactId>
             <version>${flink.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-contrib</artifactId>
-            <version>${flink.version}</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-kafka_2.11</artifactId>
-            <version>${flink.version}</version>
+            <artifactId>flink-connector-kafka</artifactId>
+            <version>3.3.0-1.20</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -89,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-statebackend-rocksdb_2.11</artifactId>
+            <artifactId>flink-statebackend-rocksdb</artifactId>
             <version>${flink.version}</version>
         </dependency>
         <dependency>
@@ -308,7 +302,7 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.flink</groupId>
-                    <artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
+                    <artifactId>flink-streaming-java</artifactId>
                     <version>${flink.version}</version>
                     <scope>compile</scope>
                 </dependency>
