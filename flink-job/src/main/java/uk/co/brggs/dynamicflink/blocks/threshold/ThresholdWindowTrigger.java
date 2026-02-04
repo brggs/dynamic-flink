@@ -2,7 +2,7 @@ package uk.co.brggs.dynamicflink.blocks.threshold;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import lombok.var;
+
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.common.state.ReducingStateDescriptor;
 import org.apache.flink.api.common.state.ValueStateDescriptor;

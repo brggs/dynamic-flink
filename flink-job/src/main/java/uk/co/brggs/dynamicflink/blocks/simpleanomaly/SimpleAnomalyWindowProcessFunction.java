@@ -2,7 +2,7 @@ package uk.co.brggs.dynamicflink.blocks.simpleanomaly;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import lombok.var;
+
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;

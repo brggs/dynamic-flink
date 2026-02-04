@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.val;
-import lombok.var;
+
 
 import java.util.ArrayList;
 import java.util.List;

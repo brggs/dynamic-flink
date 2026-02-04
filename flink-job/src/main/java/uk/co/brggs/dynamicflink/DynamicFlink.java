@@ -1,6 +1,6 @@
 package uk.co.brggs.dynamicflink;
 
-import lombok.var;
+
 import org.apache.flink.util.OutputTag;
 import uk.co.brggs.dynamicflink.blocks.BlockProcessor;
 import uk.co.brggs.dynamicflink.blocks.MatchedBlock;

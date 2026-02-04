@@ -5,7 +5,7 @@ import uk.co.brggs.dynamicflink.blocks.MatchedEvent;
 import uk.co.brggs.dynamicflink.events.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import lombok.var;
+
 import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
