@@ -12,7 +12,7 @@ import uk.co.brggs.dynamicflink.integration.shared.IntegrationTestCluster;
 import uk.co.brggs.dynamicflink.outputevents.OutputEvent;
 import uk.co.brggs.dynamicflink.rules.Rule;
 import lombok.val;
-import lombok.var;
+
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 

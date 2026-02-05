@@ -5,7 +5,7 @@ import uk.co.brggs.dynamicflink.blocks.MatchedEvent;
 import uk.co.brggs.dynamicflink.events.InputEvent;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import lombok.var;
+
 import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -39,28 +39,34 @@ public class UniqueThresholdWindowTrigger extends Trigger<MatchedEvent, TimeWind
 
             if (currentValue != null && !currentValue.isEmpty()) {
                 val uniqueValues = ctx.getPartitionedState(uniqueValuesStateDesc);
-                if (uniqueValues.get() == null) {
-                    uniqueValues.update(Collections.singletonList(currentValue));
-                } else {
-                    var valueIsNew = true;
-                    for (val value : uniqueValues.get()) {
+                Iterable<String> currentValues = uniqueValues.get();
+                
+                var count = 0;
+                var valueIsNew = true;
+                
+                if (currentValues != null) {
+                    for (val value : currentValues) {
+                        count++;
                         if (currentValue.equals(value)) {
                             valueIsNew = false;
-                            break;
                         }
                     }
+                }
 
-                    if (valueIsNew) {
-                        uniqueValues.add(currentValue);
+                if (valueIsNew) {
+                    uniqueValues.add(currentValue);
+                    count++;
+                    
+                    val threshold = Integer.parseInt(element.getBlockParameters().get(BlockParameterKey.Threshold));
 
-                        val threshold = Integer.parseInt(element.getBlockParameters().get(BlockParameterKey.Threshold));
+                    log.debug("Trigger check: count={}, threshold={}, value={}", count, threshold, currentValue);
 
-                        // Only trigger when the threshold is first exceeded
-                        if (uniqueValues.get().spliterator().getExactSizeIfKnown() == threshold) {
-                            val thresholdExceeded = ctx.getPartitionedState(exceededStateDesc);
-                            thresholdExceeded.update(true);
-                            result = TriggerResult.FIRE;
-                        }
+                    // Only trigger when the threshold is first exceeded
+                    if (count == threshold) {
+                        log.debug("Trigger firing (threshold reached)");
+                        val thresholdExceeded = ctx.getPartitionedState(exceededStateDesc);
+                        thresholdExceeded.update(true);
+                        result = TriggerResult.FIRE;
                     }
                 }
             }

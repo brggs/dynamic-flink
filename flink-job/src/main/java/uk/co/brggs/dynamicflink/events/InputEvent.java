@@ -37,6 +37,10 @@ public class InputEvent {
      * @return The value found, or null if it does not exist
      */
     public String getField(String fieldName) {
-        return parsedContent.get(fieldName).toString();
+        var value = parsedContent.get(fieldName).toString();
+        if (value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
     }
 }

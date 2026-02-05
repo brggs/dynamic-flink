@@ -12,14 +12,17 @@ import uk.co.brggs.dynamicflink.control.ControlOutput;
 import uk.co.brggs.dynamicflink.control.ControlOutputStatus;
 import lombok.val;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
-import org.apache.flink.streaming.api.TimeCharacteristic;
+
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.test.util.MiniClusterWithClientResource;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.BlobServerOptions;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import uk.co.brggs.dynamicflink.outputevents.OutputEvent;
 
 import java.io.StringWriter;
@@ -35,10 +38,19 @@ public class IntegrationTestCluster {
     private static final int NUM_SLOTS = 1;
     private static final int PARALLELISM = NUM_SLOTS * NUM_TMS;
 
+    private static final Configuration configuration = new Configuration();
+
+    static {
+        // Allow override via system property; default to 0 (ephemeral) for tests
+        final String blobPort = System.getProperty("flink.blob.port", "0");
+        configuration.setString(BlobServerOptions.PORT, blobPort);
+    }
+
     private static final MiniClusterWithClientResource miniClusterWithClientResource = new MiniClusterWithClientResource(
             new MiniClusterResourceConfiguration.Builder()
                     .setNumberSlotsPerTaskManager(NUM_SLOTS)
                     .setNumberTaskManagers(NUM_TMS)
+                    .setConfiguration(configuration)
                     .build());
 
     // Keeps track of the total control messages, so we know when they have all been received
@@ -48,7 +60,7 @@ public class IntegrationTestCluster {
         try {
             miniClusterWithClientResource.before();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to instantiate test cluster.");
+            throw new RuntimeException("Failed to instantiate test cluster.", e);
         }
     }
 
@@ -66,7 +78,7 @@ public class IntegrationTestCluster {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(PARALLELISM);
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
 
         // Generate random names, so that in subsequent tests runs the sources don't fire immediately
         val controlSource = new ControllableSourceFunction<ControlInput>(UUID.randomUUID().toString(), controlInput);
@@ -127,22 +139,33 @@ public class IntegrationTestCluster {
     }
 
     private WriterAppender addLogAppender(StringWriter logWriter) {
-        val l = new PatternLayout("%m%n");
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
 
-        val wa = new WriterAppender(l, logWriter);
-        wa.setEncoding("UTF-8");
-        wa.setThreshold(Level.ALL);
-        wa.activateOptions();
+        PatternLayout layout = PatternLayout.newBuilder()
+                .withPattern("%m%n")
+                .withConfiguration(config)
+                .build();
 
-        val log = Logger.getRootLogger();
-        log.addAppender(wa);
+        WriterAppender wa = WriterAppender.newBuilder()
+                .setName("integration-test-writer")
+                .setTarget(logWriter)
+                .setLayout(layout)
+                .setConfiguration(config)
+                .build();
+        wa.start();
+
+        org.apache.logging.log4j.core.Logger rootLogger = ctx.getRootLogger();
+        rootLogger.addAppender(wa);
 
         return wa;
     }
 
     private void removeLogAppender(WriterAppender wa) {
-        val log = Logger.getRootLogger();
-        log.removeAppender(wa);
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        org.apache.logging.log4j.core.Logger rootLogger = ctx.getRootLogger();
+        rootLogger.removeAppender(wa);
+        wa.stop();
     }
 
     public static class EventSink implements SinkFunction<OutputEvent> {

@@ -27,6 +27,7 @@ public class SafeFlatMapFunction<T, R> implements FlatMapFunction<T, R>, ResultT
             flatMapper.flatMap(value, out);
         } catch (Exception e) {
             log.error("Exception occurred in FlatMapFunction.", e);
+            e.printStackTrace();
         }
     }
 

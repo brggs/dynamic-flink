@@ -18,18 +18,28 @@ import org.apache.flink.util.OutputTag;
 
 @Slf4j
 public class UniqueThresholdBlockProcessor implements BlockProcessor {
-    private static final OutputTag<MatchedEvent> outputTag = new OutputTag<MatchedEvent>(BlockType.UNIQUE_THRESHOLD.toString()) {};
+    private static final OutputTag<MatchedEvent> outputTag = new OutputTag<>(BlockType.UNIQUE_THRESHOLD.toString(), org.apache.flink.api.common.typeinfo.TypeInformation.of(MatchedEvent.class));
 
     @Override
     public DataStream<MatchedBlock> processEvents(SingleOutputStreamOperator<MatchedEvent> inputStream) {
         // Events matching Unique Value blocks are passed into a keyed window in order to be counted
-        return inputStream.getSideOutput(outputTag)
+        return inputStream.map(e -> {
+            log.debug("UniqueThreshold processor received event: {}", e);
+            return e;
+        }).filter(event -> {
+            boolean keep = event.getBlockType() == BlockType.UNIQUE_THRESHOLD;
+            if (keep) {
+                log.debug("Keeping event in processor: {}", event.getEventContent());
+            }
+            return keep;
+        })
                 // Check that a value is present in the Unique Field, discard events where the field is not set
                 .flatMap(new SafeFlatMapFunction<>((element, out) -> {
                     val uniqueField = element.getBlockParameters().get(BlockParameterKey.UniqueField);
                     val currentValue = new InputEvent(element.getEventContent()).getField(uniqueField);
 
                     if (currentValue != null && !currentValue.isEmpty()) {
+                        log.debug("Event passed filter. Unique value: {}", currentValue);
                         out.collect(element);
                     }
                 }, MatchedEvent.class))

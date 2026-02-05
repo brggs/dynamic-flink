@@ -17,6 +17,7 @@ import org.apache.flink.api.common.state.BroadcastState;
 import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.util.OutputTag;
+import org.apache.flink.util.Collector;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -207,10 +208,12 @@ class InputBroadcastProcessFunctionTest {
         val matchingEvent = teg.generate("sourceHostName", "lavender", "processName", "process.exe");
 
         val testFunction = new InputBroadcastProcessFunction();
-        testFunction.processElement(matchingEvent, contextMock, null);
+        Collector<MatchedEvent> collector = Mockito.mock(Collector.class);
+        testFunction.processElement(matchingEvent, contextMock, collector);
 
         val outputCaptor = ArgumentCaptor.forClass(MatchedEvent.class);
         verify(contextMock, times(1)).output(any(OutputTag.class), outputCaptor.capture());
+        verify(collector, times(1)).collect(any(MatchedEvent.class));
 
         val matchedEvent = outputCaptor.getAllValues().get(0);
         assertEquals(ruleId, matchedEvent.getMatchedRuleId());
@@ -250,10 +253,12 @@ class InputBroadcastProcessFunctionTest {
         val in = teg.generate("sourceHostName", "lavender", "processName", "process.exe", "agg", "one", "agg2", "two");
 
         val testFunction = new InputBroadcastProcessFunction();
-        testFunction.processElement(in, contextMock, null);
+        Collector<MatchedEvent> collector = Mockito.mock(Collector.class);
+        testFunction.processElement(in, contextMock, collector);
 
         val outputCaptor = ArgumentCaptor.forClass(MatchedEvent.class);
         verify(contextMock, times(1)).output(any(OutputTag.class), outputCaptor.capture());
+        verify(collector, times(1)).collect(any(MatchedEvent.class));
 
         val matchedEvent = outputCaptor.getAllValues().get(0);
         assertEquals("agg=one,agg2=two", matchedEvent.getAggregationKey());
@@ -297,10 +302,12 @@ class InputBroadcastProcessFunctionTest {
         val matchingEvent = teg.generate("sourceHostName", "lavender", "processName", "process.exe", "check", "three", "hostname", "group");
 
         val testFunction = new InputBroadcastProcessFunction();
-        testFunction.processElement(matchingEvent, contextMock, null);
+        Collector<MatchedEvent> collector = Mockito.mock(Collector.class);
+        testFunction.processElement(matchingEvent, contextMock, collector);
 
         val outputCaptor = ArgumentCaptor.forClass(MatchedEvent.class);
         verify(contextMock, times(1)).output(any(OutputTag.class), outputCaptor.capture());
+        verify(collector, times(1)).collect(any(MatchedEvent.class));
 
         val matchedEvent = outputCaptor.getAllValues().get(0);
         assertEquals(ruleId, matchedEvent.getMatchedRuleId());
@@ -351,9 +358,11 @@ class InputBroadcastProcessFunctionTest {
         val matchingEvent = "2019-02-19T09:50:24.065Z host CEF:0|Microsoft|Windows|1.0.0|21|Process Start|3|sourceHostName=lavender processName=process.exe check=three";
 
         val testFunction = new InputBroadcastProcessFunction();
-        testFunction.processElement(matchingEvent, contextMock, null);
+        Collector<MatchedEvent> collector = Mockito.mock(Collector.class);
+        testFunction.processElement(matchingEvent, contextMock, collector);
 
         verify(contextMock, never()).output(any(OutputTag.class), any());
+        verify(collector, never()).collect(any());
     }
 
     @Test
@@ -378,9 +387,11 @@ class InputBroadcastProcessFunctionTest {
         val in = teg.generate("sourceHostName", "lavender", "processName", "process.exe");
 
         val testFunction = new InputBroadcastProcessFunction();
-        testFunction.processElement(in, contextMock, null);
+        Collector<MatchedEvent> collector = Mockito.mock(Collector.class);
+        testFunction.processElement(in, contextMock, collector);
 
         verify(contextMock, never()).output(any(), any());
+        verify(collector, never()).collect(any());
     }
 
     @Test
