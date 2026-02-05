@@ -17,13 +17,25 @@ The quickest and easiest way to get the Dynamic Flink job up and running is to u
 ## Building
 
 Build dependencies:
-* Java 1.8
+* Java 17
 * Maven
   
 To build the job:
 
 1. `cd flink-job`
 2. `mvn package`
+
+### Testing
+- Unit tests: `mvn test -DskipITs`
+- Integration tests (MiniCluster): `mvn test`  
+  *MiniCluster binds an ephemeral BLOB port by default; override with `-Dflink.blob.port=61234` if needed.*
+
+### Logging
+- Log4j2 (2.22.x) with SLF4J bridge. Test logging configured via `flink-job/src/test/resources/log4j2-test.xml`.
+
+### Notes on dependencies
+- Flink 1.20.0, Chill 0.10.0 (Java 17-friendly), jsoniter 0.9.23.  
+- Jackson usage relies on Flink’s shaded Jackson; no direct Jackson deps in the job.
 
 ## Issues
 
