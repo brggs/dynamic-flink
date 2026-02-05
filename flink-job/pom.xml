@@ -88,13 +88,13 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>${log4j2.version}</version>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>${log4j2.version}</version>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -112,16 +112,7 @@
             <artifactId>jsoniter</artifactId>
             <version>0.9.23</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-cbor</artifactId>
-            <version>2.15.2</version>
-        </dependency>
+        <!-- Direct Jackson dependencies removed; rely on Flink's shaded Jackson -->
         <!-- commons-logging unused; rely on slf4j/log4j2 for logging -->
         <!-- commons-lang was unused; removed -->
         <!-- joda-time unused; Java 17 time API covers needs -->
@@ -240,8 +231,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <!-- Force Mockito subclass maker and open java.util for Chill/Kryo on JPMS -->
-                    <argLine>-Dmockito.mock-maker=subclass -Djdk.attach.allowAttachSelf=true -Dnet.bytebuddy.experimental=true --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+                    <!-- Force Mockito subclass maker, allow Byte Buddy attach, open java.util for Chill/Kryo on JPMS, silence agent warnings -->
+                    <argLine>-Dmockito.mock-maker=subclass -Djdk.attach.allowAttachSelf=true -Dnet.bytebuddy.experimental=true -Dnet.bytebuddy.agent.silent=true -XX:+EnableDynamicAgentLoading --add-opens java.base/java.util=ALL-UNNAMED</argLine>
                     <properties>
                         <configurationParameters>
                             junit.jupiter.conditions.deactivate = *

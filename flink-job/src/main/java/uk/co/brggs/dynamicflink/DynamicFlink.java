@@ -21,6 +21,8 @@ import uk.co.brggs.dynamicflink.rules.RuleType;
 import uk.co.brggs.dynamicflink.rules.RuleTypeStreamSplitter;
 import uk.co.brggs.dynamicflink.rules.RuleWindowProcessFunction;
 import uk.co.brggs.dynamicflink.windows.SlidingWindowAssigner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,8 @@ import java.util.List;
  * Class containing a single method which connects the separate parts of the Dynamic Flink job.
  */
 public class DynamicFlink {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DynamicFlink.class);
 
     /**
      * Builds the Dynamic Flink job graph.
@@ -75,7 +79,7 @@ public class DynamicFlink {
         processFunctionOutput.addSink(new SinkFunction<uk.co.brggs.dynamicflink.blocks.MatchedEvent>() {
             @Override
             public void invoke(uk.co.brggs.dynamicflink.blocks.MatchedEvent value, Context context) {
-                System.out.println("DEBUG: SINK RECEIVED: " + value);
+                LOG.debug("Sink received: {}", value);
             }
         });
 

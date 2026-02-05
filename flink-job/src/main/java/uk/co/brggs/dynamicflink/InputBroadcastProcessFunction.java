@@ -191,11 +191,11 @@ public class InputBroadcastProcessFunction
                                 matchBuilder.groupBy(String.format("%s=%s", groupByField, groupByValue));
                             }
 
-                            System.out.println("DEBUG: Rule matched! Rule: " + rule.getId() + ", BlockType: " + block.getType() + ", Event: " + inputEvent.getContent());
+                            log.debug("Rule matched: ruleId={}, blockType={}, event={}", rule.getId(), block.getType(), inputEvent.getContent());
                             val event = matchBuilder.build();
                             ctx.output(new OutputTag<>(block.getType().toString(), org.apache.flink.api.common.typeinfo.TypeInformation.of(MatchedEvent.class)), event);
                             collector.collect(event);
-                            System.out.println("DEBUG: COLLECTED event");
+                            log.debug("Collected matched event for ruleId={}", rule.getId());
                         }
 
                     } catch (Throwable ex) {

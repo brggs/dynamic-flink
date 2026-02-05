@@ -302,10 +302,12 @@ class InputBroadcastProcessFunctionTest {
         val matchingEvent = teg.generate("sourceHostName", "lavender", "processName", "process.exe", "check", "three", "hostname", "group");
 
         val testFunction = new InputBroadcastProcessFunction();
-        testFunction.processElement(matchingEvent, contextMock, null);
+        Collector<MatchedEvent> collector = Mockito.mock(Collector.class);
+        testFunction.processElement(matchingEvent, contextMock, collector);
 
         val outputCaptor = ArgumentCaptor.forClass(MatchedEvent.class);
         verify(contextMock, times(1)).output(any(OutputTag.class), outputCaptor.capture());
+        verify(collector, times(1)).collect(any(MatchedEvent.class));
 
         val matchedEvent = outputCaptor.getAllValues().get(0);
         assertEquals(ruleId, matchedEvent.getMatchedRuleId());

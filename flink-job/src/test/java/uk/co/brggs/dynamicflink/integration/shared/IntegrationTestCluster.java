@@ -41,8 +41,9 @@ public class IntegrationTestCluster {
     private static final Configuration configuration = new Configuration();
 
     static {
-        // Flink 1.20 requires a configured BLOB server port; use 0 for an ephemeral OS-assigned port
-        configuration.setString(BlobServerOptions.PORT, "0");
+        // Allow override via system property; default to 0 (ephemeral) for tests
+        final String blobPort = System.getProperty("flink.blob.port", "0");
+        configuration.setString(BlobServerOptions.PORT, blobPort);
     }
 
     private static final MiniClusterWithClientResource miniClusterWithClientResource = new MiniClusterWithClientResource(
@@ -126,9 +127,6 @@ public class IntegrationTestCluster {
         }
 
         val logOutput = logWriter.toString();
-        System.out.println("------------- CAPTURED LOGS START -------------");
-        System.out.println(logOutput);
-        System.out.println("------------- CAPTURED LOGS END -------------");
 
         if (logOutput.contains("cannot be used as a POJO")) {
             throw new AssertionError("Invalid POJO detected, see log output.");

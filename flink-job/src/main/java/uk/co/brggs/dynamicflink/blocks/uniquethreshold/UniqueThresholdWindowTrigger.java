@@ -59,11 +59,11 @@ public class UniqueThresholdWindowTrigger extends Trigger<MatchedEvent, TimeWind
                     
                     val threshold = Integer.parseInt(element.getBlockParameters().get(BlockParameterKey.Threshold));
 
-                    System.out.println("DEBUG: Trigger check: count=" + count + ", threshold=" + threshold + ", value=" + currentValue);
+                    log.debug("Trigger check: count={}, threshold={}, value={}", count, threshold, currentValue);
 
                     // Only trigger when the threshold is first exceeded
                     if (count == threshold) {
-                        System.out.println("DEBUG: Trigger FIRING!");
+                        log.debug("Trigger firing (threshold reached)");
                         val thresholdExceeded = ctx.getPartitionedState(exceededStateDesc);
                         thresholdExceeded.update(true);
                         result = TriggerResult.FIRE;
