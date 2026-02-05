@@ -1,6 +1,7 @@
 package uk.co.brggs.dynamicflink.integration.shared;
 
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
+import org.apache.flink.streaming.api.watermark.Watermark;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +35,11 @@ public class ControllableSourceFunction<T> extends RichParallelSourceFunction<T>
             synchronized (sourceContext.getCheckpointLock()) {
                 sourceContext.collect(itemsForOutput.get(counter++));
             }
+        }
+
+        // Emit a final watermark to close any open windows
+        synchronized (sourceContext.getCheckpointLock()) {
+            sourceContext.emitWatermark(Watermark.MAX_WATERMARK);
         }
     }
 

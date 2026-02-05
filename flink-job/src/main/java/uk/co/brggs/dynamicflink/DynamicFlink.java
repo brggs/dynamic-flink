@@ -7,16 +7,16 @@ import uk.co.brggs.dynamicflink.blocks.MatchedBlock;
 import uk.co.brggs.dynamicflink.control.ControlOutput;
 import uk.co.brggs.dynamicflink.outputevents.OutputEvent;
 import uk.co.brggs.dynamicflink.control.ControlInput;
-import uk.co.brggs.dynamicflink.control.ControlInputWatermarkAssigner;
+import uk.co.brggs.dynamicflink.control.ControlInputTimestampAssigner;
 import uk.co.brggs.dynamicflink.control.ControlOutputTag;
 import uk.co.brggs.dynamicflink.events.EventTimestampExtractor;
 import uk.co.brggs.dynamicflink.rules.Rule;
 import lombok.val;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
-import org.apache.flink.streaming.api.windowing.time.Time;
 import uk.co.brggs.dynamicflink.rules.RuleType;
 import uk.co.brggs.dynamicflink.rules.RuleTypeStreamSplitter;
 import uk.co.brggs.dynamicflink.rules.RuleWindowProcessFunction;
@@ -48,7 +48,8 @@ public class DynamicFlink {
     ) {
         // Assign timestamps based on the event time specified in the event
         val timestampedEventStream = eventStream.assignTimestampsAndWatermarks(
-                new EventTimestampExtractor(Time.seconds(10)));
+                WatermarkStrategy.<String>forBoundedOutOfOrderness(java.time.Duration.ofSeconds(10))
+                        .withTimestampAssigner(new EventTimestampExtractor()));
 
         // Set up the descriptor for storing the rules in managed state
         val controlInputStateDescriptor = new MapStateDescriptor<>(
@@ -58,7 +59,9 @@ public class DynamicFlink {
 
         // Broadcast the control stream, so that rules are available at every node
         val controlBroadcastStream = controlStream
-                .assignTimestampsAndWatermarks(new ControlInputWatermarkAssigner())
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<ControlInput>forMonotonousTimestamps()
+                                .withTimestampAssigner(new ControlInputTimestampAssigner()))
                 .broadcast(controlInputStateDescriptor);
 
         // Send the events into the input function.  The matching event stream is then split based on the type of the
@@ -68,6 +71,13 @@ public class DynamicFlink {
                 .process(new InputBroadcastProcessFunction())
                 .name("input-broadcast-processor")
                 .uid("input-broadcast-processor");
+        
+        processFunctionOutput.addSink(new SinkFunction<uk.co.brggs.dynamicflink.blocks.MatchedEvent>() {
+            @Override
+            public void invoke(uk.co.brggs.dynamicflink.blocks.MatchedEvent value, Context context) {
+                System.out.println("DEBUG: SINK RECEIVED: " + value);
+            }
+        });
 
         // Send control output to the appropriate stream
         processFunctionOutput

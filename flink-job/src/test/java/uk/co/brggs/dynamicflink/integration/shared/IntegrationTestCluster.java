@@ -12,10 +12,12 @@ import uk.co.brggs.dynamicflink.control.ControlOutput;
 import uk.co.brggs.dynamicflink.control.ControlOutputStatus;
 import lombok.val;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
-import org.apache.flink.streaming.api.TimeCharacteristic;
+
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.test.util.MiniClusterWithClientResource;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.BlobServerOptions;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -35,10 +37,18 @@ public class IntegrationTestCluster {
     private static final int NUM_SLOTS = 1;
     private static final int PARALLELISM = NUM_SLOTS * NUM_TMS;
 
+    private static final Configuration configuration = new Configuration();
+
+    static {
+        // Flink 1.20 requires a non-zero BLOB server port range; pick an ephemeral range to avoid collisions
+        configuration.setString(BlobServerOptions.PORT, "50100-50200");
+    }
+
     private static final MiniClusterWithClientResource miniClusterWithClientResource = new MiniClusterWithClientResource(
             new MiniClusterResourceConfiguration.Builder()
                     .setNumberSlotsPerTaskManager(NUM_SLOTS)
                     .setNumberTaskManagers(NUM_TMS)
+                    .setConfiguration(configuration)
                     .build());
 
     // Keeps track of the total control messages, so we know when they have all been received
@@ -48,7 +58,7 @@ public class IntegrationTestCluster {
         try {
             miniClusterWithClientResource.before();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to instantiate test cluster.");
+            throw new RuntimeException("Failed to instantiate test cluster.", e);
         }
     }
 
@@ -66,7 +76,7 @@ public class IntegrationTestCluster {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(PARALLELISM);
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
 
         // Generate random names, so that in subsequent tests runs the sources don't fire immediately
         val controlSource = new ControllableSourceFunction<ControlInput>(UUID.randomUUID().toString(), controlInput);
@@ -115,6 +125,9 @@ public class IntegrationTestCluster {
         }
 
         val logOutput = logWriter.toString();
+        System.out.println("------------- CAPTURED LOGS START -------------");
+        System.out.println(logOutput);
+        System.out.println("------------- CAPTURED LOGS END -------------");
 
         if (logOutput.contains("cannot be used as a POJO")) {
             throw new AssertionError("Invalid POJO detected, see log output.");

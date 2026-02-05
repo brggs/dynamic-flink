@@ -29,7 +29,7 @@ class UniqueThresholdIntegrationTest extends IntegrationTestBase {
     void thresholdMatched_shouldProduceAlert() throws Exception {
         val matchingRule = Rule.builder()
                 .id("matchingRule")
-                .blocks(Collections.singletonList(Block.builder()
+                .blocks(new java.util.ArrayList<>(Collections.singletonList(Block.builder()
                         .type(BlockType.UNIQUE_THRESHOLD)
                         .condition(new EqualCondition("company", "2"))
                         .windowSize(3)
@@ -40,8 +40,8 @@ class UniqueThresholdIntegrationTest extends IntegrationTestBase {
                                 put(BlockParameterKey.Threshold, "3");
                             }
                         })
-                        .aggregationGroupingFields(Collections.singletonList("username"))
-                        .build()))
+                        .aggregationGroupingFields(new java.util.ArrayList<>(Collections.singletonList("username")))
+                        .build())))
                 .groupByField("hostname")
                 .build();
         val matchingRuleData = new ObjectMapper().writeValueAsString(matchingRule);
@@ -74,7 +74,7 @@ class UniqueThresholdIntegrationTest extends IntegrationTestBase {
     void thresholdExceeded_shouldProduceAlert() throws Exception {
         val matchingRule = Rule.builder()
                 .id("matchingRule")
-                .blocks(Collections.singletonList(Block.builder()
+                .blocks(new java.util.ArrayList<>(Collections.singletonList(Block.builder()
                         .type(BlockType.UNIQUE_THRESHOLD)
                         .condition(new EqualCondition("company", "2"))
                         .windowSize(10)
@@ -85,8 +85,8 @@ class UniqueThresholdIntegrationTest extends IntegrationTestBase {
                                 put(BlockParameterKey.Threshold, "3");
                             }
                         })
-                        .aggregationGroupingFields(Collections.singletonList("username"))
-                        .build()))
+                        .aggregationGroupingFields(new java.util.ArrayList<>(Collections.singletonList("username")))
+                        .build())))
                 .groupByField("hostname")
                 .build();
         val matchingRuleData = new ObjectMapper().writeValueAsString(matchingRule);

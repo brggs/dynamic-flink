@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.streaming.api.TimeCharacteristic;
+
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
@@ -45,7 +45,7 @@ public class StreamingJob {
                 kafkaServer);
 
         val env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
 
         val kafkaConfig = new Properties();
         kafkaConfig.setProperty("bootstrap.servers", kafkaServer);

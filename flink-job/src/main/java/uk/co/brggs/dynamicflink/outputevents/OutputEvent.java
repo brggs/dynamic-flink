@@ -21,7 +21,7 @@ public class OutputEvent {
     /**
      * The time at which the rule triggered in the Flink job.
      */
-    @Getter(onMethod_ = @JsonProperty(to = {InputEvent.EventTimeField}))
+    @Getter(onMethod=@__({@JsonProperty(to = {InputEvent.EventTimeField})}))
     private String eventTime;
 
     /**
