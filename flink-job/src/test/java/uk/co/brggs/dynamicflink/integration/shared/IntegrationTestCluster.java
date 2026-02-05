@@ -18,10 +18,11 @@ import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.test.util.MiniClusterWithClientResource;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.BlobServerOptions;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import uk.co.brggs.dynamicflink.outputevents.OutputEvent;
 
 import java.io.StringWriter;
@@ -40,8 +41,8 @@ public class IntegrationTestCluster {
     private static final Configuration configuration = new Configuration();
 
     static {
-        // Flink 1.20 requires a non-zero BLOB server port range; pick an ephemeral range to avoid collisions
-        configuration.setString(BlobServerOptions.PORT, "50100-50200");
+        // Flink 1.20 requires a configured BLOB server port; use 0 for an ephemeral OS-assigned port
+        configuration.setString(BlobServerOptions.PORT, "0");
     }
 
     private static final MiniClusterWithClientResource miniClusterWithClientResource = new MiniClusterWithClientResource(
@@ -140,22 +141,33 @@ public class IntegrationTestCluster {
     }
 
     private WriterAppender addLogAppender(StringWriter logWriter) {
-        val l = new PatternLayout("%m%n");
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
 
-        val wa = new WriterAppender(l, logWriter);
-        wa.setEncoding("UTF-8");
-        wa.setThreshold(Level.ALL);
-        wa.activateOptions();
+        PatternLayout layout = PatternLayout.newBuilder()
+                .withPattern("%m%n")
+                .withConfiguration(config)
+                .build();
 
-        val log = Logger.getRootLogger();
-        log.addAppender(wa);
+        WriterAppender wa = WriterAppender.newBuilder()
+                .setName("integration-test-writer")
+                .setTarget(logWriter)
+                .setLayout(layout)
+                .setConfiguration(config)
+                .build();
+        wa.start();
+
+        org.apache.logging.log4j.core.Logger rootLogger = ctx.getRootLogger();
+        rootLogger.addAppender(wa);
 
         return wa;
     }
 
     private void removeLogAppender(WriterAppender wa) {
-        val log = Logger.getRootLogger();
-        log.removeAppender(wa);
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        org.apache.logging.log4j.core.Logger rootLogger = ctx.getRootLogger();
+        rootLogger.removeAppender(wa);
+        wa.stop();
     }
 
     public static class EventSink implements SinkFunction<OutputEvent> {
