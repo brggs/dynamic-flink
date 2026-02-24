@@ -2,6 +2,11 @@
 
 Purpose: lightweight norms for folks (and tools/LLM “agents”) working in this repository so changes stay consistent and low-friction.
 
+## Documentation placement
+- Put all design docs in `docs/`.
+- Name design docs `DESIGN-<topic>.md` (for example: `docs/DESIGN-docker-environment.md`).
+- Do not place design docs in feature folders unless explicitly requested.
+
 ## Code & style
 - Java 17, Flink 1.20.0.
 - Logging: Log4j2 (2.22.1) with SLF4J binding; Log4j 1.x removed.
