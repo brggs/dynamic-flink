@@ -14,7 +14,7 @@
         <flink.version>1.20.0</flink.version>
         <java.version>17</java.version>
         <chill.version>0.10.0</chill.version>
-        <log4j2.version>2.22.1</log4j2.version>
+        <log4j2.version>2.25.4</log4j2.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
